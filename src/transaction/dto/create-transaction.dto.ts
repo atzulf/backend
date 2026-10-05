@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum, IsNumber, IsOptional, IsDateString, Min } from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum, IsNumber, IsOptional, IsDateString, IsPositive } from 'class-validator';
 import { CategoryType } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -15,7 +15,7 @@ export class CreateTransactionDto {
 
   @ApiProperty({ example: 50000 })
   @IsNumber()
-  @Min(0)
+  @IsPositive()
   @IsNotEmpty()
   amount: number;
 

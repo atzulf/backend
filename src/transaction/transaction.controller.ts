@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { TransactionService } from './transaction.service.js';
 import { CreateTransactionDto } from './dto/create-transaction.dto.js';
 import { UpdateTransactionDto } from './dto/update-transaction.dto.js';
+import { QueryTransactionDto } from './dto/query-transaction.dto.js';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Transactions')
@@ -16,9 +17,9 @@ export class TransactionController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all transactions' })
-  findAll() {
-    return this.transactionService.findAll();
+  @ApiOperation({ summary: 'Get all transactions (filterable)' })
+  findAll(@Query() query: QueryTransactionDto) {
+    return this.transactionService.findAll(query);
   }
 
   @Get(':id')

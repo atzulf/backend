@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateTransactionDto } from './dto/create-transaction.dto.js';
 import { UpdateTransactionDto } from './dto/update-transaction.dto.js';
+import { QueryTransactionDto } from './dto/query-transaction.dto.js';
 
 @Injectable()
 export class TransactionService {
@@ -17,10 +18,29 @@ export class TransactionService {
     });
   }
 
-  async findAll() {
+  async findAll(query: QueryTransactionDto = {}) {
+    const { type, categoryId, startDate, endDate } = query;
+
+    let dateFilter: { gte?: Date; lte?: Date } | undefined;
+    if (startDate || endDate) {
+      dateFilter = {};
+      if (startDate) dateFilter.gte = new Date(startDate);
+      if (endDate) {
+        // Make endDate inclusive (until end of that day)
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        dateFilter.lte = end;
+      }
+    }
+
     return this.prisma.transaction.findMany({
+      where: {
+        ...(type && { type }),
+        ...(categoryId && { categoryId }),
+        ...(dateFilter && { transactionDate: dateFilter }),
+      },
       orderBy: { transactionDate: 'desc' },
-      include: { category: true } // Include relation
+      include: { category: true },
     });
   }
 
