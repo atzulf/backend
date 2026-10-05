@@ -1,11 +1,31 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { CategoryType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateCategoryDto } from './dto/create-category.dto.js';
 import { UpdateCategoryDto } from './dto/update-category.dto.js';
 
 @Injectable()
-export class CategoryService {
+export class CategoryService implements OnModuleInit {
   constructor(private prisma: PrismaService) {}
+
+  // Seed default categories (PRD §15) when the table is empty
+  async onModuleInit() {
+    const count = await this.prisma.category.count();
+    if (count > 0) return;
+
+    const income = ['Salary', 'Freelance', 'Business', 'Investment', 'Bonus', 'Gift', 'Other'];
+    const expense = [
+      'Food', 'Transportation', 'Housing', 'Bills', 'Shopping',
+      'Entertainment', 'Health', 'Education', 'Subscription', 'Other',
+    ];
+
+    await this.prisma.category.createMany({
+      data: [
+        ...income.map((name) => ({ name, type: CategoryType.INCOME })),
+        ...expense.map((name) => ({ name, type: CategoryType.EXPENSE })),
+      ],
+    });
+  }
 
   async create(createCategoryDto: CreateCategoryDto) {
     return this.prisma.category.create({
