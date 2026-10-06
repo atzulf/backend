@@ -34,7 +34,7 @@ export class BudgetService {
         ...(year ? { year } : {}),
       },
       include: { category: true },
-      orderBy: [{ year: 'desc' }, { month: 'desc' }]
+      orderBy: [{ year: 'desc' }, { month: 'desc' }, { createdAt: 'desc' }]
     });
 
     // Augment with 'used' amount from transactions
