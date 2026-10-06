@@ -2,20 +2,27 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import express from 'express';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+const server = express();
+let cachedApp: any;
 
-  // Enable validation globally
+async function bootstrapServer() {
+  if (cachedApp) return cachedApp;
+  
+  const app = await NestFactory.create(
+    AppModule,
+    new ExpressAdapter(server)
+  );
+
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     transform: true,
   }));
 
-  // Enable CORS (Important for mobile/web app)
   app.enableCors();
 
-  // Setup Swagger API Documentation
   const config = new DocumentBuilder()
     .setTitle('Catetan Duit API')
     .setDescription('The Catetan Duit API documentation')
@@ -24,6 +31,22 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.init();
+  cachedApp = app;
+  return app;
 }
-bootstrap();
+
+// For local development (when not running inside Vercel)
+if (!process.env.VERCEL) {
+  bootstrapServer().then(app => {
+    app.listen(process.env.PORT ?? 3000, () => {
+      console.log(`Server is running on port ${process.env.PORT ?? 3000}`);
+    });
+  });
+}
+
+// For Vercel Serverless
+export default async function handler(req: any, res: any) {
+  await bootstrapServer();
+  return server(req, res);
+}
