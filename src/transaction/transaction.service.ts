@@ -39,7 +39,10 @@ export class TransactionService {
         ...(categoryId && { categoryId }),
         ...(dateFilter && { transactionDate: dateFilter }),
       },
-      orderBy: { transactionDate: 'desc' },
+      orderBy: [
+        { transactionDate: 'desc' },
+        { createdAt: 'desc' }
+      ],
       include: { category: true },
     });
   }
