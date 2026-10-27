@@ -41,13 +41,13 @@ export class StatisticsService {
     return { income, expense, balance: income - expense };
   }
 
-  async getCategories(month?: number, year?: number) {
+  async getCategories(month?: number, year?: number, type: CategoryType = CategoryType.EXPENSE) {
     const dateFilter = this.getDateFilter(month, year);
     
     const transactions = await this.prisma.transaction.findMany({
       where: { 
         transactionDate: dateFilter,
-        type: CategoryType.EXPENSE 
+        type,
       },
       include: { category: true },
     });
