@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { StatisticsService } from './statistics.service.js';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { CategoryType } from '@prisma/client';
 
 @ApiTags('Statistics')
 @Controller('statistics')
@@ -16,11 +17,13 @@ export class StatisticsController {
   }
 
   @Get('categories')
-  @ApiOperation({ summary: 'Get expense grouped by category' })
+  @ApiOperation({ summary: 'Get income or expense grouped by category (default: expense)' })
+  @ApiQuery({ name: 'type', required: false, enum: CategoryType })
   @ApiQuery({ name: 'month', required: false, type: Number })
   @ApiQuery({ name: 'year', required: false, type: Number })
-  getCategories(@Query('month') month?: string, @Query('year') year?: string) {
-    return this.statisticsService.getCategories(month ? Number(month) : undefined, year ? Number(year) : undefined);
+  getCategories(@Query('month') month?: string, @Query('year') year?: string, @Query('type') type?: string) {
+    const categoryType = type === CategoryType.INCOME ? CategoryType.INCOME : CategoryType.EXPENSE;
+    return this.statisticsService.getCategories(month ? Number(month) : undefined, year ? Number(year) : undefined, categoryType);
   }
 
   @Get('trend')
