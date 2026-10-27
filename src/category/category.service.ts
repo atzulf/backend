@@ -59,8 +59,19 @@ export class CategoryService implements OnModuleInit {
 
   async remove(id: string) {
     await this.findOne(id); // Check existence
-    return this.prisma.category.delete({
-      where: { id },
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Cascade delete transactions linked to this category
+      await tx.transaction.deleteMany({
+        where: { categoryId: id },
+      });
+      // 2. Cascade delete budgets linked to this category
+      await tx.budget.deleteMany({
+        where: { categoryId: id },
+      });
+      // 3. Delete the category
+      return tx.category.delete({
+        where: { id },
+      });
     });
   }
 }
