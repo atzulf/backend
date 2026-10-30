@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsPositive, IsString, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateBudgetDto {
@@ -8,7 +8,8 @@ export class CreateBudgetDto {
   categoryId: string;
 
   @ApiProperty()
-  @IsPositive()
+  @IsNumber()
+  @Min(0)
   amount: number;
 
   @ApiProperty()
