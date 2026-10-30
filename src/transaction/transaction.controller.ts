@@ -3,6 +3,7 @@ import { TransactionService } from './transaction.service.js';
 import { CreateTransactionDto } from './dto/create-transaction.dto.js';
 import { UpdateTransactionDto } from './dto/update-transaction.dto.js';
 import { QueryTransactionDto } from './dto/query-transaction.dto.js';
+import { TransferDto } from './dto/transfer.dto.js';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Transactions')
@@ -14,6 +15,12 @@ export class TransactionController {
   @ApiOperation({ summary: 'Create a new transaction' })
   create(@Body() createTransactionDto: CreateTransactionDto) {
     return this.transactionService.create(createTransactionDto);
+  }
+
+  @Post('transfer')
+  @ApiOperation({ summary: 'Transfer balance between two categories / wallets' })
+  transfer(@Body() transferDto: TransferDto) {
+    return this.transactionService.transfer(transferDto);
   }
 
   @Get()
