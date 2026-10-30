@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateTransactionDto } from './dto/create-transaction.dto.js';
 import { UpdateTransactionDto } from './dto/update-transaction.dto.js';
 import { QueryTransactionDto } from './dto/query-transaction.dto.js';
+import { TransferDto } from './dto/transfer.dto.js';
 
 @Injectable()
 export class TransactionService {
@@ -15,6 +16,37 @@ export class TransactionService {
         ...createTransactionDto,
         transactionDate: new Date(createTransactionDto.transactionDate),
       },
+    });
+  }
+
+  async transfer(transferDto: TransferDto) {
+    const cleanNote = transferDto.description?.trim();
+    const noteSuffix = cleanNote ? ` (${cleanNote})` : '';
+
+    return this.prisma.$transaction(async (tx) => {
+      const outTx = await tx.transaction.create({
+        data: {
+          categoryId: transferDto.sourceCategoryId,
+          type: 'EXPENSE',
+          amount: transferDto.amount,
+          description: `Transfer ke Dompet ${transferDto.targetCategoryName}${noteSuffix}`,
+          transactionDate: new Date(transferDto.transactionDate),
+        },
+        include: { category: true },
+      });
+
+      const inTx = await tx.transaction.create({
+        data: {
+          categoryId: transferDto.targetCategoryId,
+          type: 'INCOME',
+          amount: transferDto.amount,
+          description: `Transfer dari Dompet ${transferDto.sourceCategoryName}${noteSuffix}`,
+          transactionDate: new Date(transferDto.transactionDate),
+        },
+        include: { category: true },
+      });
+
+      return { outTx, inTx };
     });
   }
 
