@@ -17,6 +17,8 @@ model Category {
 
   transactions Transaction[]
   budgets      Budget[]
+
+  @@index([type])
 }
 
 model Transaction {
@@ -30,6 +32,10 @@ model Transaction {
   updatedAt       DateTime @updatedAt
 
   category Category @relation(fields: [categoryId], references: [id])
+
+  @@index([transactionDate])
+  @@index([categoryId, transactionDate])
+  @@index([type, transactionDate])
 }
 
 model Budget {
@@ -42,6 +48,9 @@ model Budget {
   updatedAt  DateTime @updatedAt
 
   category Category @relation(fields: [categoryId], references: [id])
+
+  @@index([month, year])
+  @@index([categoryId, month, year])
 }
 
 enum CategoryType {
