@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CategoryType } from '@prisma/client';
 
+const NOT_TRANSFER_FILTER = [
+  { description: { startsWith: 'Transfer ke Dompet ' } },
+  { description: { startsWith: 'Transfer dari Dompet ' } },
+];
+
 @Injectable()
 export class StatisticsService {
   constructor(private prisma: PrismaService) {}
@@ -26,7 +31,10 @@ export class StatisticsService {
     const dateFilter = this.getDateFilter(month, year);
     
     const transactions = await this.prisma.transaction.findMany({
-      where: { transactionDate: dateFilter },
+      where: {
+        transactionDate: dateFilter,
+        NOT: NOT_TRANSFER_FILTER,
+      },
       select: { type: true, amount: true },
     });
 
@@ -48,6 +56,7 @@ export class StatisticsService {
       where: { 
         transactionDate: dateFilter,
         type,
+        NOT: NOT_TRANSFER_FILTER,
       },
       include: { category: true },
     });
@@ -79,7 +88,10 @@ export class StatisticsService {
       };
 
       const transactions = await this.prisma.transaction.findMany({
-        where: { transactionDate: dateFilter },
+        where: {
+          transactionDate: dateFilter,
+          NOT: NOT_TRANSFER_FILTER,
+        },
         select: { type: true, amount: true, transactionDate: true },
       });
 
@@ -104,7 +116,10 @@ export class StatisticsService {
       };
 
       const transactions = await this.prisma.transaction.findMany({
-        where: { transactionDate: dateFilter },
+        where: {
+          transactionDate: dateFilter,
+          NOT: NOT_TRANSFER_FILTER,
+        },
         select: { type: true, amount: true, transactionDate: true },
       });
 
